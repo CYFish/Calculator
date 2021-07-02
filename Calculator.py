@@ -24,9 +24,11 @@ class Calculator:
     def __calculate(self):
         try:
             input_value = float(self.__value_text)
-        except:
+        except Exception as exception:
+            print("{}:".format(type(exception).__name__), exception)
             self.__value_text = "0"
             return
+
         if input_value % 1 == 0:
             input_value = int(input_value)
 
@@ -49,12 +51,13 @@ class Calculator:
         self.__value_text = str(self.__last_result_value)
 
     def __clear_all(self):
-        self.__last_result_value = None
+        self.__last_result_value = self.__last_input_value = None
         self.__value_text = "0"
         self.__action = CalculateAction.NONE
 
     def get_expression(self):
         if self.__action == CalculateAction.ALL_CLEAR:
+            self.__action = CalculateAction.NONE
             return ""
         if self.__action == CalculateAction.NONE:
             return self.__value_text
@@ -64,9 +67,22 @@ class Calculator:
         return self.__value_text
 
     def input_operator(self, operator_character):
+        if operator_character == CalculateAction.ALL_CLEAR.value:
+            self.__clear_all()
+            self.__action = CalculateAction.ALL_CLEAR
+            return
+
         if operator_character == CalculateAction.BACKSPACE.value:
             if self.__value_text != "0":
-                self.__value_text = self.__value_text[0:-1]
+                try:
+                    value = float(self.__value_text)
+                except Exception as exception:
+                    print("{}:".format(type(exception).__name__), exception)
+                    self.__clear_all()
+                    self.__action = CalculateAction.ALL_CLEAR
+                    return
+                else:
+                    self.__value_text = self.__value_text[0:-1]
             if self.__value_text == "":
                 self.__value_text = "0"
             return
@@ -81,11 +97,21 @@ class Calculator:
             self.__value_text = str(value)
             return
 
+        if operator_character == CalculateAction.PERCENT.value:
+            try:
+                input_value = float(self.__value_text)
+            except Exception as exception:
+                print("{}:".format(type(exception).__name__), exception)
+                self.__value_text = "0"
+                return
+            if input_value == 0:
+                return
+            input_value *= 0.01
+            self.__value_text = str(input_value)
+            return
+
         if operator_character == CalculateAction.EQUAL.value:
             self.__calculate()
-            return
-        if operator_character == CalculateAction.EQUAL.ALL_CLEAR:
-            self.__clear_all()
             return
 
         if self.__action == CalculateAction.NONE:
@@ -95,8 +121,8 @@ class Calculator:
 
         try:
             self.__action = CalculateAction(operator_character)
-        except Exception as error_message:
-            print("{}:".format(type(error_message).__name__), error_message)
+        except Exception as exception:
+            print("{}:".format(type(exception).__name__), exception)
 
     def input_number(self, number_character):
         if self.__last_result_value != 0:
