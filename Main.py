@@ -48,6 +48,7 @@ class MainWindow(QMainWindow):
         self.ui.pushButtonMultiply.clicked.connect(self.operator_button_click)
         self.ui.pushButtonDivide.clicked.connect(self.operator_button_click)
         self.ui.pushButtonAC.clicked.connect(self.operator_button_click)
+        self.ui.pushButtonPlusMinus.clicked.connect(self.operator_button_click)
         self.ui.pushButtonPercent.clicked.connect(self.operator_button_click)
         self.ui.pushButtonBackSpace.clicked.connect(self.operator_button_click)
         self.ui.pushButtonEqual.clicked.connect(self.operator_button_click)

@@ -10,7 +10,7 @@ class CalculateAction(Enum):
     PERCENT = "%"
     PLUS_MINUS = "±"
     BACKSPACE = "←"
-    ALLCLEAR = "AC"
+    ALL_CLEAR = "AC"
     EQUAL = "="
 
 
@@ -74,10 +74,20 @@ class Calculator:
                 self.__value_text = "0"
             return
 
+        if operator_character == CalculateAction.PLUS_MINUS.value:
+            if self.__value_text == 0:
+                return
+            value = float(self.__value_text)
+            if value % 1 == 0:
+                value = int(value)
+            value *= -1
+            self.__value_text = str(value)
+            return
+
         if operator_character == CalculateAction.EQUAL.value:
             self.__calculate()
             return
-        if operator_character == CalculateAction.EQUAL.ALLCLEAR:
+        if operator_character == CalculateAction.EQUAL.ALL_CLEAR:
             self.__clear_all()
             return
 
