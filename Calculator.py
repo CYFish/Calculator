@@ -16,22 +16,9 @@ class CalculateAction(Enum):
 
 class Calculator:
     def __init__(self):
-        self.__last_value = 0
-        self.__value = 0
+        self.__last_value = None
         self.__value_text = "0"
         self.__action = CalculateAction.NONE
-
-    def __set_value_by_text(self):
-        if self.__value_text == "ERROR":
-            self.__value = 9999999999
-        else:
-            self.__value = float(self.__value_text)
-
-    def __set_text_by_value(self):
-        if self.__value == 9999999999:
-            self.__value_text = "ERROR"
-        else:
-            self.__value_text = str(self.__value)
 
     def __calculate(self):
         if self.__value_text == "ERROR":
@@ -56,15 +43,22 @@ class Calculator:
         self.__value_text = str(self.__last_value)
 
     def __clear_all(self):
-        self.__last_value = self.__value = 0
+        self.__last_value = None
         self.__value_text = "0"
         self.__action = CalculateAction.NONE
 
+    def get_expression(self):
+        if self.__action == CalculateAction.ALL_CLEAR:
+            return ""
+        if self.__action == CalculateAction.NONE:
+            return self.__value_text
+        return "{} {}".format(self.__last_value, self.__action.value)
+        # if self.__last_value is None:
+        #     return "{} {}".format(self.__last_value, self.__action.value)
+        # return "{} {} =".format(self.__last_value, self.__action.value, self.__value_text)
+
     def get_value_text(self):
         return self.__value_text
-
-    def get_value(self):
-        return self.__value
 
     def input_operator(self, operator_character):
         if operator_character == CalculateAction.BACKSPACE.value:
@@ -114,10 +108,7 @@ class Calculator:
             else:
                 self.__value_text = number_character
         else:
-            if self.__value % 1 != 0 and (number_character == "." or not number_character.isdigit()):
+            value = float(self.__value_text)
+            if value % 1 != 0 and (number_character == "." or not number_character.isdigit()):
                 return
             self.__value_text += number_character
-        self.__set_value_by_text()
-
-    def plus_minus(self):
-        self.multiply(-1)

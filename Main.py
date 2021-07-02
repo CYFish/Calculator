@@ -24,10 +24,12 @@ class MainWindow(QMainWindow):
     def operator_button_click(self):
         self.calculator.input_operator(self.sender().text())
         self.ui.labelResult.setText(self.calculator.get_value_text())
+        self.ui.labelExpression.setText(self.calculator.get_expression())
 
     def operand_button_click(self):
         self.calculator.input_number(self.sender().text())
         self.ui.labelResult.setText(self.calculator.get_value_text())
+        self.ui.labelExpression.setText(self.calculator.get_expression())
 
     def setup_button(self):
         self.ui.pushButtonZero.clicked.connect(self.operand_button_click)
