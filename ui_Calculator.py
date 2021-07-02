@@ -195,7 +195,7 @@ class Ui_MainWindow(object):
         sizePolicy1.setHeightForWidth(self.labelResult.sizePolicy().hasHeightForWidth())
         self.labelResult.setSizePolicy(sizePolicy1)
         font2 = QFont()
-        font2.setPointSize(40)
+        font2.setPointSize(32)
         self.labelResult.setFont(font2)
         self.labelResult.setAlignment(Qt.AlignRight|Qt.AlignTrailing|Qt.AlignVCenter)
 
