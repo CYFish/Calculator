@@ -48,7 +48,7 @@ class Calculator:
                 return None
             value = left_operand / right_operand
         elif operator == CalculateAction.NONE:
-            value = right_operand
+            value = left_operand
         elif operator == CalculateAction.EQUAL:
             value = right_operand
 
@@ -193,6 +193,5 @@ class Calculator:
                     return
                 self.__display_text += number_character
 
-        self.__last_left_operand = self.get_value_by_text(self.__display_text)
         if self.__display_text is None:
             self.__display_text = "0"
