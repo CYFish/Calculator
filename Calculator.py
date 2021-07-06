@@ -70,11 +70,12 @@ class Calculator:
         return value
 
     def input_operator(self, operator_character):
+        # [AC]
         if operator_character == CalculateAction.ALL_CLEAR.value:
             self.__clear_all()
             self.__action = CalculateAction.ALL_CLEAR
             return
-
+        # [←]
         if operator_character == CalculateAction.BACKSPACE.value:
             if self.__value_text == "0":
                 return
@@ -89,6 +90,7 @@ class Calculator:
                 self.__value_text = "0"
             return
 
+        # [±]
         if operator_character == CalculateAction.PLUS_MINUS.value:
             value = self.get_value_by_text(self.__value_text)
             if value is None or value == 0:
@@ -98,6 +100,7 @@ class Calculator:
             self.__value_text = str(value)
             return
 
+        # [%]
         if operator_character == CalculateAction.PERCENT.value:
             input_value = self.get_value_by_text(self.__value_text)
             if input_value is None or input_value == 0:
@@ -107,25 +110,29 @@ class Calculator:
             self.__value_text = str(input_value)
             return
 
+        # [+] [-] [×] [÷] [=]
+        input_value = None
+
+        # [=]
         if operator_character == CalculateAction.EQUAL.value:
             # clear the last input value (the operand at the right hand side of the operator)
             self.__last_input_value = None
-
             input_value = self.get_value_by_text(self.__value_text)
             if input_value is None:
                 self.__value_text = "0"
                 return
+        else:
+            input_value = self.__last_input_value
 
-            self.__last_result_value = self.calculate(self.__action, self.__last_result_value, input_value)
+        self.__last_result_value = self.calculate(self.__action, self.__last_result_value, input_value)
 
-            if self.__last_result_value is None:
-                self.__value_text = "ERROR"
+        if self.__last_result_value is None:
+            self.__value_text = "ERROR"
 
-            self.__value_text = str(self.__last_result_value)
+        self.__value_text = str(self.__last_result_value)
+
+        if operator_character == CalculateAction.EQUAL.value:
             return
-
-        if self.__action == CalculateAction.NONE:
-            self.__last_result_value = self.get_value_by_text(self.__value_text)
 
         try:
             self.__action = CalculateAction(operator_character)
