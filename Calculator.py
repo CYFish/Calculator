@@ -110,6 +110,10 @@ class Calculator:
             self.__display_text = self.__display_text[0:-1]
             if self.__display_text == "" or self.__display_text == "-":
                 self.__display_text = "0"
+
+            value = self.get_value_by_text(self.__display_text)
+            if value is None or value == 0:
+                self.__display_text = "0"
             return
 
         # [±]
