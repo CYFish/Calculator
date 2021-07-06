@@ -14,16 +14,24 @@ class CalculateAction(Enum):
     EQUAL = "="
 
 
+class InputType(Enum):
+    OPERAND = "OPERAND"
+    OPERATOR = "OPERATOR"
+
+
 class Calculator:
     def __init__(self):
+        self.__last_input_type = InputType.OPERATOR
         self.__last_result_value = None
-        self.__last_input_value = None
-        self.__value_text = "0"
+        self.__last_left_operand = None
+        self.__last_right_operand = None
+        self.__display_text = "0"
         self.__action = CalculateAction.NONE
 
     def __clear_all(self):
-        self.__last_result_value = self.__last_input_value = None
-        self.__value_text = "0"
+        self.__last_input_type = InputType.OPERATOR
+        self.__last_result_value = self.__last_left_operand = self.__last_right_operand = None
+        self.__display_text = "0"
         self.__action = CalculateAction.NONE
 
     @staticmethod
@@ -41,21 +49,31 @@ class Calculator:
             value = left_operand / right_operand
         elif operator == CalculateAction.NONE:
             value = right_operand
+        elif operator == CalculateAction.EQUAL:
+            value = right_operand
 
+        if value is None:
+            return None
         if value % 1 == 0:
             return int(value)
         return value
 
-    def get_expression(self):
+    def get_expression(self, equal_pressed: bool):
         if self.__action == CalculateAction.ALL_CLEAR:
             self.__action = CalculateAction.NONE
             return ""
+        if self.__last_result_value is None:
+            return ""
         if self.__action == CalculateAction.NONE:
-            return self.__value_text
-        return "{} {}".format(self.__last_result_value, self.__action.value)
+            if not equal_pressed:
+                return self.__display_text
+            return "{} =".format(self.__last_result_value)
+        if not equal_pressed:
+            return "{} {}".format(self.__last_result_value, self.__action.value)
+        return "{} {} {} =".format(self.__last_left_operand, self.__action.value, self.__last_right_operand)
 
-    def get_value_text(self):
-        return self.__value_text
+    def get_display_text(self):
+        return self.__display_text
 
     @staticmethod
     def get_value_by_text(value_text: str):
@@ -70,6 +88,9 @@ class Calculator:
         return value
 
     def input_operator(self, operator_character):
+        previous_input_type, self.__last_input_type = self.__last_input_type, InputType.OPERATOR
+        previous_action = self.__action
+
         # [AC]
         if operator_character == CalculateAction.ALL_CLEAR.value:
             self.__clear_all()
@@ -77,88 +98,97 @@ class Calculator:
             return
         # [←]
         if operator_character == CalculateAction.BACKSPACE.value:
-            if self.__value_text == "0":
+            self.__last_input_type = InputType.OPERAND
+            if self.__display_text == "0":
                 return
 
-            value = self.get_value_by_text(self.__value_text)
+            value = self.get_value_by_text(self.__display_text)
             if value is None or value == 0:
-                self.__value_text = "0"
+                self.__display_text = "0"
                 return
 
-            self.__value_text = self.__value_text[0:-1]
-            if self.__value_text == "" or self.__value_text == "-":
-                self.__value_text = "0"
+            self.__display_text = self.__display_text[0:-1]
+            if self.__display_text == "" or self.__display_text == "-":
+                self.__display_text = "0"
             return
 
         # [±]
         if operator_character == CalculateAction.PLUS_MINUS.value:
-            value = self.get_value_by_text(self.__value_text)
+            self.__last_input_type = InputType.OPERAND
+            value = self.get_value_by_text(self.__display_text)
             if value is None or value == 0:
-                self.__value_text = "0"
+                self.__display_text = "0"
                 return
             value *= -1
-            self.__value_text = str(value)
+            self.__display_text = str(value)
             return
 
         # [%]
         if operator_character == CalculateAction.PERCENT.value:
-            input_value = self.get_value_by_text(self.__value_text)
+            self.__last_input_type = InputType.OPERAND
+            input_value = self.get_value_by_text(self.__display_text)
             if input_value is None or input_value == 0:
-                self.__value_text = "0"
+                self.__display_text = "0"
                 return
             input_value *= 0.01
-            self.__value_text = str(input_value)
+            self.__display_text = str(input_value)
             return
 
         # [+] [-] [×] [÷] [=]
-        input_value = None
+        input_value = self.__last_right_operand
+        if operator_character == CalculateAction.EQUAL.value:  # [=]
+            # keep the previous action
+            self.__last_left_operand = self.__last_result_value
+            self.__last_right_operand = None
+        else:  # [+] [-] [×] [÷]
+            try:
+                self.__action = CalculateAction(operator_character)
+            except Exception as exception:
+                print("{}:".format(type(exception).__name__), exception)
 
-        # [=]
-        if operator_character == CalculateAction.EQUAL.value:
-            # clear the last input value (the operand at the right hand side of the operator)
-            self.__last_input_value = None
-            input_value = self.get_value_by_text(self.__value_text)
-            if input_value is None:
-                self.__value_text = "0"
+            if previous_input_type == InputType.OPERATOR:
                 return
+
+        if previous_input_type == InputType.OPERAND or input_value is None:
+            input_value = self.get_value_by_text(self.__display_text)
+            if input_value is None:
+                self.__display_text = "0"
+                return
+
+        if self.__last_left_operand is None:
+            self.__last_left_operand = input_value
         else:
-            input_value = self.__last_input_value
+            self.__last_right_operand = input_value
 
-        self.__last_result_value = self.calculate(self.__action, self.__last_result_value, input_value)
+        self.__last_result_value = self.calculate(previous_action, self.__last_left_operand, self.__last_right_operand)
 
+        # set the display text
         if self.__last_result_value is None:
-            self.__value_text = "ERROR"
-
-        self.__value_text = str(self.__last_result_value)
-
-        if operator_character == CalculateAction.EQUAL.value:
-            return
-
-        try:
-            self.__action = CalculateAction(operator_character)
-        except Exception as exception:
-            print("{}:".format(type(exception).__name__), exception)
+            self.__display_text = "ERROR"
+            self.__action = CalculateAction.NONE
+        else:
+            self.__display_text = str(self.__last_result_value)
 
     def input_number(self, number_character):
-        # bug: 輸入完運算符號 (operator) 後，再繼續輸入數字，未能清空上一個數字
+        last_input_type, self.__last_input_type = self.__last_input_type, InputType.OPERAND
 
-        if self.__last_input_value is None:
-            self.__value_text = number_character
+        if last_input_type == InputType.OPERATOR:
+            self.__display_text = number_character
         else:
             # the max length is 12
-            if len(self.__value_text) > 11:
+            if len(self.__display_text) > 11:
                 return
-            if self.__value_text == "0":
+            if self.__display_text == "0":
                 if number_character == ".":
-                    self.__value_text += number_character
+                    self.__display_text += number_character
                 else:
-                    self.__value_text = number_character
+                    self.__display_text = number_character
             else:
                 # only 1 decimal point
-                if "." in self.__value_text and (number_character == "." or not number_character.isdigit()):
+                if "." in self.__display_text and (number_character == "." or not number_character.isdigit()):
                     return
-                self.__value_text += number_character
+                self.__display_text += number_character
 
-        self.__last_input_value = self.get_value_by_text(self.__value_text)
-        if self.__value_text is None:
-            self.__value_text = "0"
+        self.__last_left_operand = self.get_value_by_text(self.__display_text)
+        if self.__display_text is None:
+            self.__display_text = "0"

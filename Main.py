@@ -19,17 +19,20 @@ class MainWindow(QMainWindow):
         self.setup_button()
 
         self.ui.labelExpression.clear()
-        self.ui.labelResult.setText(self.calculator.get_value_text())
+        self.ui.labelResult.setText(self.calculator.get_display_text())
 
     def operator_button_click(self):
-        self.calculator.input_operator(self.sender().text())
-        self.ui.labelResult.setText(self.calculator.get_value_text())
-        self.ui.labelExpression.setText(self.calculator.get_expression())
+        operator_text = self.sender().text()
+
+        self.calculator.input_operator(operator_text)
+
+        self.ui.labelResult.setText(self.calculator.get_display_text())
+        self.ui.labelExpression.setText(self.calculator.get_expression(operator_text == "="))
 
     def operand_button_click(self):
         self.calculator.input_number(self.sender().text())
-        self.ui.labelResult.setText(self.calculator.get_value_text())
-        self.ui.labelExpression.setText(self.calculator.get_expression())
+        self.ui.labelResult.setText(self.calculator.get_display_text())
+        self.ui.labelExpression.setText(self.calculator.get_expression(False))
 
     def setup_button(self):
         self.ui.pushButtonZero.clicked.connect(self.operand_button_click)
